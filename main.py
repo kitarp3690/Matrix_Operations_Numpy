@@ -1,133 +1,180 @@
 import numpy as np
+import tkinter as tk
+from tkinter import simpledialog, messagebox
 
 class Matrix:
-    def __init__(self):
+    def __init__(self, root):
         """This function initializes 3 matrices"""
+        self.root = root
         self.matrixA = None
         self.matrixB = None
-        self.matrixC= None
-        self.ans= None
-        self.data = {1:self.matrixA, 2:self.matrixB, 3:self.matrixC}
+        self.matrixC = None
+        self.ans = None
+        self.data = {1: self.matrixA, 2: self.matrixB, 3: self.matrixC}
+        
+        # GUI elements
+        self.matrix_label = tk.Label(root, text="Matrix Operations", font=("Arial", 16))
+        self.matrix_label.pack(pady=10)
 
-    def display_matlist(self)->int:
-        """This function displays the matrix list and return given matrix number"""
-        print('''
-        Matrix
-        [1]. Matrix A
-        [2]. Matrix B
-        [3]. Matrix C
-        [4]. Back
-        :: ''')
+        # Matrix buttons
+        self.button_frame = tk.Frame(root)
+        self.button_frame.pack()
+
+        self.button_matrixA = tk.Button(self.button_frame, text="Matrix A", command=lambda: self.take_input('A'))
+        self.button_matrixA.grid(row=0, column=0, padx=5, pady=5)
+        self.add_hover_effect(self.button_matrixA)
+
+        self.button_matrixB = tk.Button(self.button_frame, text="Matrix B", command=lambda: self.take_input('B'))
+        self.button_matrixB.grid(row=0, column=1, padx=5, pady=5)
+        self.add_hover_effect(self.button_matrixB)
+
+        self.button_matrixC = tk.Button(self.button_frame, text="Matrix C", command=lambda: self.take_input('C'))
+        self.button_matrixC.grid(row=0, column=2, padx=5, pady=5)
+        self.add_hover_effect(self.button_matrixC)
+
+        self.button_show = tk.Button(root, text="Show Matrix Data", command=self.show_matrix_data)
+        self.button_show.pack(pady=5)
+        self.add_hover_effect(self.button_show)
+
+        self.button_add = tk.Button(root, text="Add Matrices", command=self.add_matrix)
+        self.button_add.pack(pady=5)
+        self.add_hover_effect(self.button_add)
+
+        self.button_subtract = tk.Button(root, text="Subtract Matrices", command=self.subtract_matrix)
+        self.button_subtract.pack(pady=5)
+        self.add_hover_effect(self.button_subtract)
+
+        self.result_label = tk.Label(root, text="Result: ", font=("Arial", 12))
+        self.result_label.pack(pady=10)
+    
+    def add_hover_effect(self, button):
+        """Adds hover effect to a button"""
+        def on_enter(event):
+            button.config(bg="lightblue")  # Change color on hover
+        def on_leave(event):
+            button.config(bg="SystemButtonFace")  # Reset color when hover ends
+
+        button.bind("<Enter>", on_enter)
+        button.bind("<Leave>", on_leave)
+
+    def take_input(self, matrix_name):
+        """Function to create a grid of Entry widgets for matrix input"""
+        size_str = simpledialog.askstring("Matrix Size", f"Enter {matrix_name} size in n,m format:")
+        try:
+            size = tuple(map(int, size_str.split(',')))
+            if len(size) != 2 or size[0] <= 0 or size[1] <= 0:
+                messagebox.showerror("Invalid Input", "Please enter two positive integers separated by a comma (e.g., 2,3).")
+                return
+
+            # Create the matrix grid window
+            self.grid_window = tk.Toplevel(self.root)
+            self.grid_window.title(f"Enter Values for Matrix {matrix_name}")
+            self.grid_window.geometry("400x400")
+            
+            self.entries = []  # To store the Entry widgets
+            self.size = size
+
+            # Create the grid of Entry widgets
+            for i in range(size[0]):
+                row_entries = []
+                for j in range(size[1]):
+                    entry = tk.Entry(self.grid_window, width=5)
+                    entry.grid(row=i, column=j, padx=5, pady=5)
+                    row_entries.append(entry)
+                self.entries.append(row_entries)
+
+            # Add a button to save the input and close the grid window
+            save_button = tk.Button(self.grid_window, text="Save Matrix", command=lambda: self.save_matrix(matrix_name))
+            save_button.grid(row=size[0], column=0, columnspan=size[1], pady=10)
+
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred: {e}")
+
+    def save_matrix(self, matrix_name):
+        """Function to save the values from the Entry widgets into the matrix"""
+        try:
+            matrix = np.zeros(self.size, dtype=int)
+            for i in range(self.size[0]):
+                for j in range(self.size[1]):
+                    value = self.entries[i][j].get()
+                    if value.isdigit():
+                        matrix[i, j] = int(value)
+                    else:
+                        messagebox.showerror("Invalid Input", f"Please enter a valid integer for position [{i},{j}]")
+                        return
+
+            if matrix_name == 'A':
+                self.matrixA = matrix
+            elif matrix_name == 'B':
+                self.matrixB = matrix
+            elif matrix_name == 'C':
+                self.matrixC = matrix
+
+            messagebox.showinfo("Success", f"Matrix {matrix_name} stored successfully!")
+            self.grid_window.destroy()  # Close the grid window after saving
+
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred: {e}")
 
     def show_matrix_data(self):
-        while True:
-            try:
-                user_ip = int(input('''
-                Show Matrix
-                [1]. Matrix A
-                [2]. Matrix B
-                [3]. Matrix C
-                [4]. Back
-                :: '''))
-                match user_ip:
-                    case 1:
-                        print(f"Matrix A = \n{self.matrixA}")
-                    case 2:
-                        print(f"Matrix B = \n{self.matrixB}")
-                    case 3:
-                        print(f"Matrix C = \n{self.matrixC}")
-                    case 4:
-                        return
-                    case _:
-                        print("Please enter valid input")
-                    
-            except ValueError:
-                print('Please enter valid input')
-
-    def take_input(self):
-        while True:
-            try:
-                user_ip = int(input(f'''
-                Input for 
-                [1]. Matrix A
-                [2]. Matrix B
-                [3]. Matrix C
-                [4]. Back\n
-                '''))
-                match user_ip:
-                    case 1:
-                        self.matrixA = self.input_matrix('A')
-                    case 2:
-                        self.matrixB = self.input_matrix('B')
-                    case 3:
-                        self.matrixC = self.input_matrix('C')
-                    case 4:
-                        return
-                    case _:
-                        print("Invalid selection! Please choose a valid option.")
-            except ValueError:
-                print("Please Enter valid input")
-
-    def input_matrix(self, matrix_name:str):
-        """ function to take input for matrices """
-        while True:
-            try:
-                size = tuple(map(int, input(f"Enter matrix {matrix_name} size in n,m format: ").split(',')))
-                # Validate size format (two positive integers)
-                if len(size) != 2 or size[0] <= 0 or size[1] <= 0:
-                    print("❌ Error: Please enter two positive integers separated by a comma (e.g., 2,3).")
-                    continue 
-                matrix = np.zeros(size, dtype=int)
-
-                for i in range(size[0]):
-                    for j in range(size[1]):
-                        matrix[i, j] = int(input(f"Enter value for {matrix_name}[{i},{j}]: "))
-
-                print(f"Matrix {matrix_name} stored successfully!\n")
-                return matrix
-
-            except ValueError:
-                print("Invalid input! Please enter valid input.")
-                return None
+        """ Displays the matrix data in a dialog box """
+        data_str = f"Matrix A:\n{self.matrixA}\n\nMatrix B:\n{self.matrixB}\n\nMatrix C:\n{self.matrixC}"
+        messagebox.showinfo("Matrix Data", data_str)
 
     def add_matrix(self):
-        """Function that adds matrices"""
-        while True:
-            try:
-                print("Enter matrix numbers that you want to add ")
-                self.display_matlist()
-                user_ip = tuple(map(int,input("Plese enter giving comma (e.g. 2,3): ").split(',')))
-                for i in user_ip:
-                    self.ans += self.data.get(i) 
+        """ Performs the matrix addition """
+        try:
+            matrices = [self.matrixA, self.matrixB, self.matrixC]
+            matrices = [mat for mat in matrices if mat is not None]
 
-            except ValueError:
-                print('Invalid input! Please enter valid input.')
+            if len(matrices) < 2:
+                messagebox.showerror("Error", "Please initialize at least two matrices to add.")
+                return
 
-    def operations(self):
-        while True:
-            print(f'''
-            What operation do you want to perform?
-            [1]. Input
-            [2]. Data
-            [3]. Add
-            [4]. Subtract
-            [5]. Determinant
-            [6]. Transpose
-            [7]. Inversion
-            [8]. Eigenvalues and Eigenvectors
-            [9]. Exit
-            ''')
-            user_ip = int(input('::'))
-            match user_ip:
-                case 1:
-                    self.take_input()
-                case 2:
-                    self.show_matrix_data()
-                case 3:
-                    self.add_matrix()
-                case 9:
-                    break
+            # Ensure all matrices have the same shape
+            shape = matrices[0].shape
+            if not all(mat.shape == shape for mat in matrices):
+                messagebox.showerror("Error", "Matrices must have the same dimensions for addition!")
+                return
 
-if __name__=='__main__':
-    mat1 = Matrix()
-    mat1.operations()
+            # Perform addition
+            self.ans = np.sum(matrices, axis=0)
+            result_str = f"Addition Result:\n{self.ans}"
+            self.result_label.config(text="Result: " + result_str)
+            messagebox.showinfo("Addition Result", result_str)
+
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred: {e}")
+
+    def subtract_matrix(self):
+        """ Performs the matrix subtraction """
+        try:
+            matrices = [self.matrixA, self.matrixB, self.matrixC]
+            matrices = [mat for mat in matrices if mat is not None]
+
+            if len(matrices) < 2:
+                messagebox.showerror("Error", "Please initialize at least two matrices to subtract.")
+                return
+
+            # Ensure all matrices have the same shape
+            shape = matrices[0].shape
+            if not all(mat.shape == shape for mat in matrices):
+                messagebox.showerror("Error", "Matrices must have the same dimensions for subtraction!")
+                return
+
+            # Perform subtraction
+            self.ans = matrices[0] - np.sum(matrices[1:], axis=0)
+            result_str = f"Subtraction Result:\n{self.ans}"
+            self.result_label.config(text="Result: " + result_str)
+            messagebox.showinfo("Subtraction Result", result_str)
+
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred: {e}")
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    root.title("Matrix Operations")
+    root.geometry("400x500")  # Set window size
+    app = Matrix(root)
+    root.mainloop()
