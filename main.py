@@ -1,6 +1,7 @@
 import numpy as np
 import tkinter as tk
 from tkinter import simpledialog, messagebox
+import re
 
 class Matrix:
     def __init__(self, root):
@@ -54,6 +55,22 @@ class Matrix:
         self.button_subtract.grid(row=2, column=0, padx=5, pady=5)
         # self.button_subtract.pack(pady=5)
         self.add_hover_effect(self.button_subtract)
+
+        self.button_inverse = tk.Button(self.functionalities_frame, text="Inverse Matrix", width=20, height=2 , command=self.inverse_matrix)
+        self.button_inverse.grid(row=3, column=0, padx=5, pady=5)
+        self.add_hover_effect(self.button_inverse)
+
+        self.button_transpose = tk.Button(self.functionalities_frame, text="Transpose Matrix", width=20, height=2 , command=self.transpose_matrix)
+        self.button_transpose.grid(row=4, column=0, padx=5, pady=5)
+        self.add_hover_effect(self.button_transpose)
+
+        self.button_determinant = tk.Button(self.functionalities_frame, text="Determinant of Matrix", width=20, height=2 , command=self.determinant_matrix)
+        self.button_determinant.grid(row=4, column=0, padx=5, pady=5)
+        self.add_hover_effect(self.button_determinant)
+
+        self.button_eigen = tk.Button(self.functionalities_frame, text="Eigen of Matrix", width=20, height=2 , command=self.eigen_matrix)
+        self.button_eigen.grid(row=4, column=0, padx=5, pady=5)
+        self.add_hover_effect(self.button_eigen)
 
         self.result_label = tk.Label(root, text="Recent: ", font=("Arial", 12))
         self.result_label.pack(pady=10)
@@ -109,7 +126,7 @@ class Matrix:
             for i in range(self.size[0]):
                 for j in range(self.size[1]):
                     value = self.entries[i][j].get()
-                    if value.isdigit():
+                    if re.match(r"^-?\d+$",value): # This is a regular expression checking whether the value is positive or negative integer or not
                         matrix[i, j] = int(value)
                     else:
                         messagebox.showerror("Invalid Input", f"Please enter a valid integer for position [{i},{j}]")
@@ -347,6 +364,147 @@ class Matrix:
             error_msg = f'An error occured: {e}'
             self.silent_popup('Error',error_msg)
         self.new_window.destroy()
+
+    def inverse_matrix(self):
+        new_window  = tk.Toplevel(self.root)
+        new_window.title("Inverse of Matrix")
+        new_window.geometry('400x400')
+
+        note = tk.Label(new_window, text="Select matrix to find Inverse", font=(16))
+        note.pack()
+
+        button_frame = tk.Frame(new_window)
+        button_frame.pack()
+
+        def inverse_func(matrix_name: str):
+            mat_dict={'A': self.matrixA, 'B': self.matrixB, 'C' : self.matrixC}
+            mat = mat_dict[matrix_name]
+            if mat is None:
+                messagebox.showerror("Error", "Selected matrices is not initialized!")
+            else:
+                result = np.linalg.inv(mat)
+                msg = f"Inverse of {matrix_name} :\n{result}"
+                self.result_label.config(text="Recent: " + msg)
+                self.silent_popup('Inverse Result',msg)
+            new_window.destroy()
+
+
+        button_matrixA = tk.Button(button_frame, text="Matrix A", command=lambda: inverse_func("A"))
+        self.add_hover_effect(button_matrixA)
+        button_matrixA.grid(row=0, column=0, padx=5, pady=10)
+
+        button_matrixB = tk.Button(button_frame, text="Matrix B", command=lambda: inverse_func("B"))
+        self.add_hover_effect(button_matrixB)
+        button_matrixB.grid(row=1, column=0, padx=5, pady=5)
+
+        button_matrixC = tk.Button(button_frame, text="Matrix C", command=lambda: inverse_func("C"))
+        self.add_hover_effect(button_matrixC)
+        button_matrixC.grid(row=2, column=0, padx=5, pady=5)
+    
+    def transpose_matrix(self):
+        new_window  = tk.Toplevel(self.root)
+        new_window.title("Transpose of Matrix")
+        new_window.geometry('400x400')
+
+        note = tk.Label(new_window, text="Select matrix to find Transpose", font=(16))
+        note.pack()
+
+        button_frame = tk.Frame(new_window)
+        button_frame.pack()
+
+        def transpose_func(matrix_name: str):
+            mat_dict={'A': self.matrixA, 'B': self.matrixB, 'C' : self.matrixC}
+            mat = mat_dict[matrix_name]
+            if mat is None:
+                messagebox.showerror("Error", "Selected matrices is not initialized!")
+            else:
+                result = np.transpose(mat)
+                msg = f"Transpose of {matrix_name} :\n{result}"
+                self.result_label.config(text="Recent:\n" + msg)
+                self.silent_popup('Transpose Result',msg)
+            new_window.destroy()
+
+        button_matrixA = tk.Button(button_frame, text="Matrix A", command=lambda: transpose_func("A"))
+        self.add_hover_effect(button_matrixA)
+        button_matrixA.grid(row=0, column=0, padx=5, pady=10)
+
+        button_matrixB = tk.Button(button_frame, text="Matrix B", command=lambda: transpose_func("B"))
+        self.add_hover_effect(button_matrixB)
+        button_matrixB.grid(row=1, column=0, padx=5, pady=5)
+
+        button_matrixC = tk.Button(button_frame, text="Matrix C", command=lambda: transpose_func("C"))
+        self.add_hover_effect(button_matrixC)
+        button_matrixC.grid(row=2, column=0, padx=5, pady=5)
+    
+    def determinant_matrix(self):
+        new_window  = tk.Toplevel(self.root)
+        new_window.title("Determinant of Matrix")
+        new_window.geometry('400x400')
+
+        note = tk.Label(new_window, text="Select matrix to find Determinant", font=(16))
+        note.pack()
+
+        button_frame = tk.Frame(new_window)
+        button_frame.pack()
+
+        def determinant_func(matrix_name: str):
+            mat_dict={'A': self.matrixA, 'B': self.matrixB, 'C' : self.matrixC}
+            mat = mat_dict[matrix_name]
+            if mat is None:
+                messagebox.showerror("Error", "Selected matrices is not initialized!")
+            else:
+                result = np.linalg.det(mat)
+                msg = f"Determinant of {matrix_name} :\n{result}"
+                self.result_label.config(text="Recent:\n" + msg)
+                self.silent_popup('Determinant Result',msg)
+            new_window.destroy()
+
+        button_matrixA = tk.Button(button_frame, text="Matrix A", command=lambda: determinant_func("A"))
+        self.add_hover_effect(button_matrixA)
+        button_matrixA.grid(row=0, column=0, padx=5, pady=10)
+
+        button_matrixB = tk.Button(button_frame, text="Matrix B", command=lambda: determinant_func("B"))
+        self.add_hover_effect(button_matrixB)
+        button_matrixB.grid(row=1, column=0, padx=5, pady=5)
+
+        button_matrixC = tk.Button(button_frame, text="Matrix C", command=lambda: determinant_func("C"))
+        self.add_hover_effect(button_matrixC)
+        button_matrixC.grid(row=2, column=0, padx=5, pady=5)
+    
+    def eigen_matrix(self):
+        new_window  = tk.Toplevel(self.root)
+        new_window.title("Eigen of Matrix")
+        new_window.geometry('400x400')
+
+        note = tk.Label(new_window, text="Select matrix to find Eigen Value and Eigen Vector", font=(16))
+        note.pack()
+
+        button_frame = tk.Frame(new_window)
+        button_frame.pack()
+
+        def eigen_func(matrix_name: str):
+            mat_dict={'A': self.matrixA, 'B': self.matrixB, 'C' : self.matrixC}
+            mat = mat_dict[matrix_name]
+            if mat is None:
+                messagebox.showerror("Error", "Selected matrices is not initialized!")
+            else:
+                eigen_val, eigen_vector = np.linalg.eig(mat)
+                msg = f"Eigen Value of {matrix_name} : {eigen_val}\nEigen Vector of {matrix_name} : {eigen_vector}"
+                self.result_label.config(text="Recent:\n" + msg)
+                self.silent_popup('Eigen Result',msg)
+            new_window.destroy()
+
+        button_matrixA = tk.Button(button_frame, text="Matrix A", command=lambda: eigen_func("A"))
+        self.add_hover_effect(button_matrixA)
+        button_matrixA.grid(row=0, column=0, padx=5, pady=10)
+
+        button_matrixB = tk.Button(button_frame, text="Matrix B", command=lambda: eigen_func("B"))
+        self.add_hover_effect(button_matrixB)
+        button_matrixB.grid(row=1, column=0, padx=5, pady=5)
+
+        button_matrixC = tk.Button(button_frame, text="Matrix C", command=lambda: eigen_func("C"))
+        self.add_hover_effect(button_matrixC)
+        button_matrixC.grid(row=2, column=0, padx=5, pady=5)
 
     def silent_popup(self, title, message):
         popup = tk.Toplevel()
