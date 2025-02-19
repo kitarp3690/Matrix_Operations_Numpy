@@ -23,28 +23,36 @@ class Matrix:
         self.button_frame = tk.Frame(root)
         self.button_frame.pack()
 
-        self.button_matrixA = tk.Button(self.button_frame, text="Matrix A", command=lambda: self.take_input('A'))
-        self.button_matrixA.grid(row=0, column=0, padx=5, pady=5)
+        self.button_matrixA = tk.Button(self.button_frame, text="Matrix A", width=15, height=1 , command=lambda: self.take_input('A'))
+        self.button_matrixA.grid(row=0, column=0, padx=5, pady=9)
         self.add_hover_effect(self.button_matrixA)
 
-        self.button_matrixB = tk.Button(self.button_frame, text="Matrix B", command=lambda: self.take_input('B'))
+        self.button_matrixB = tk.Button(self.button_frame, text="Matrix B", width=15, height=1 , command=lambda: self.take_input('B'))
         self.button_matrixB.grid(row=0, column=1, padx=5, pady=5)
         self.add_hover_effect(self.button_matrixB)
 
-        self.button_matrixC = tk.Button(self.button_frame, text="Matrix C", command=lambda: self.take_input('C'))
+        self.button_matrixC = tk.Button(self.button_frame, text="Matrix C", width=15, height=1 , command=lambda: self.take_input('C'))
         self.button_matrixC.grid(row=0, column=2, padx=5, pady=5)
         self.add_hover_effect(self.button_matrixC)
+        
+        # frame for add, subtract and other functionalities
+        self.functionalities_frame = tk.Frame(root)
+        # self.functionalities_frame.pack()
+        self.functionalities_frame.pack(side="top", anchor="center", pady=20) 
 
-        self.button_show = tk.Button(root, text="Show Matrix Data", command=self.show_matrix_data)
-        self.button_show.pack(pady=5)
+        self.button_show = tk.Button(self.functionalities_frame, text="Show Matrix Data", width=20, height=2 , command=self.show_matrix_data)
+        self.button_show.grid(row=0, column=0, padx=5, pady=5)
+        # self.button_show.pack(pady=5)
         self.add_hover_effect(self.button_show)
 
-        self.button_add = tk.Button(root, text="Add Matrices", command=self.add_matrix)
-        self.button_add.pack(pady=5)
+        self.button_add = tk.Button(self.functionalities_frame, text="Add Matrices", width=20, height=2 , command=self.add_matrix)
+        self.button_add.grid(row=1, column=0, padx=5, pady=5)
+        # self.button_add.pack(pady=5)
         self.add_hover_effect(self.button_add)
 
-        self.button_subtract = tk.Button(root, text="Subtract Matrices", command=self.subtract_matrix_backend)
-        self.button_subtract.pack(pady=5)
+        self.button_subtract = tk.Button(self.functionalities_frame, text="Subtract Matrices", width=20, height=2 , command=self.subtract_matrix)
+        self.button_subtract.grid(row=2, column=0, padx=5, pady=5)
+        # self.button_subtract.pack(pady=5)
         self.add_hover_effect(self.button_subtract)
 
         self.result_label = tk.Label(root, text="Recent: ", font=("Arial", 12))
@@ -62,33 +70,34 @@ class Matrix:
 
     def take_input(self, matrix_name):
         """Function to create a grid of Entry widgets for matrix input"""
-        size_str = simpledialog.askstring("Matrix Size", f"Enter {matrix_name} size in n,m format:")
+        size_str = simpledialog.askstring("Matrix Size", f"Enter {matrix_name}' size in n,m format:")
         try:
-            size = tuple(map(int, size_str.split(',')))
-            if len(size) != 2 or size[0] <= 0 or size[1] <= 0:
-                messagebox.showerror("Invalid Input", "Please enter two positive integers separated by a comma (e.g., 2,3).")
-                return
+            if size_str:
+                size = tuple(map(int, size_str.split(',')))
+                if len(size) != 2 or size[0] <= 0 or size[1] <= 0:
+                    messagebox.showerror("Invalid Input", "Please enter two positive integers separated by a comma (e.g., 2,3).")
+                    return
 
-            # Create the matrix grid window
-            self.grid_window = tk.Toplevel(self.root)
-            self.grid_window.title(f"Enter Values for Matrix {matrix_name}")
-            self.grid_window.geometry("400x400")
-            
-            self.entries = []  # To store the Entry widgets
-            self.size = size
+                # Create the matrix grid window
+                self.grid_window = tk.Toplevel(self.root)
+                self.grid_window.title(f"Enter Values for Matrix {matrix_name}")
+                self.grid_window.geometry("400x400")
+                
+                self.entries = []  # To store the Entry widgets
+                self.size = size
 
-            # Create the grid of Entry widgets
-            for i in range(size[0]):
-                row_entries = []
-                for j in range(size[1]):
-                    entry = tk.Entry(self.grid_window, width=5)
-                    entry.grid(row=i, column=j, padx=5, pady=5)
-                    row_entries.append(entry)
-                self.entries.append(row_entries)
+                # Create the grid of Entry widgets
+                for i in range(size[0]):
+                    row_entries = []
+                    for j in range(size[1]):
+                        entry = tk.Entry(self.grid_window, width=5)
+                        entry.grid(row=i, column=j, padx=5, pady=5)
+                        row_entries.append(entry)
+                    self.entries.append(row_entries)
 
-            # Add a button to save the input and close the grid window
-            save_button = tk.Button(self.grid_window, text="Save Matrix", command=lambda: self.save_matrix(matrix_name))
-            save_button.grid(row=size[0], column=0, columnspan=size[1], pady=10)
+                # Add a button to save the input and close the grid window
+                save_button = tk.Button(self.grid_window, text="Save Matrix", command=lambda: self.save_matrix(matrix_name))
+                save_button.grid(row=size[0], column=0, columnspan=size[1], pady=10)
 
         except Exception as e:
             messagebox.showerror("Error", f"An error occurred: {e}")
@@ -136,6 +145,10 @@ class Matrix:
         
         # eqn stores the eqn value 
         eqn = []
+
+        # to display how to use message
+        htu = tk.Label(self.new_window,text='Press Button ', font=(16))
+        htu.pack()
 
         # Buttons for Matrixs
         button_frame = tk.Frame(self.new_window)
@@ -195,15 +208,17 @@ class Matrix:
             # print(f'eqn = {eqn}')
             if eqn == []:
                 ans = '0'
-                result_str = f"Addition Reult: {ans}"
+                result_str = f"Addition Result: {ans}"
                 self.result_label.config(text="Result: " + ans)
-                messagebox.showinfo("Addition Result", result_str)
+                # messagebox.showinfo("Addition Result", result_str)
+                self.silent_popup('Addition Result',result_str)
             else:
                 mat_dict={'A': self.matrixA, 'B': self.matrixB, 'C' : self.matrixC}
 
                 # checking if any matrix of eqn is of None type (i.e. value is not added in that matrix)
                 if any(mat_dict.get(mat) is None for mat in eqn):
                     messagebox.showerror("Error","One or more selected matrices are not initialized! ")
+                    # self.silent_popup('Error',f'One or more selected matrices are not initialized!')
                     self.new_window.destroy()
                     return
 
@@ -218,35 +233,120 @@ class Matrix:
                 self.ans = np.sum(matrices, axis=0)
                 result_str = f"Addition Result:\n{self.ans}"
                 self.result_label.config(text="Result: " + result_str)
-                messagebox.showinfo("Addition Result", result_str)
+                # messagebox.showinfo("Addition Result", result_str)
+                self.silent_popup('Addition Result',result_str)
         except Exception as e:
             messagebox.showerror("Error", f"An error occurred: {e}")
         self.new_window.destroy()
 
-    def subtract_matrix_backend(self):
+    def subtract_matrix(self):
+        self.new_window = tk.Toplevel(self.root)
+        self.new_window.title(f"Subtract Matrices")
+        self.new_window.geometry("400x400")
+
+        # Store equation text
+        self.equation_text = tk.StringVar()
+        self.equation_text.set("")  # Initially empty
+        
+        # eqn stores the eqn value 
+        eqn = []
+
+        # to display how to use(htu) message
+        htu = tk.Label(self.new_window,text='Press Button ', font=(16))
+        htu.pack()
+
+        # Buttons for Matrixs
+        button_frame = tk.Frame(self.new_window)
+        button_frame.pack()
+
+        # Function to update equation
+        def update_equation(matrix_name: str):
+            current_text: str = self.equation_text.get()
+            # print(f'current_text ={current_text}')
+
+            # for delete button
+            if matrix_name == "D":    
+                if current_text:
+                    if len(current_text) < 2:
+                        self.equation_text.set(current_text[:-1])  # Remove last character (mat)
+                    else:
+                        self.equation_text.set(current_text[:-4])  # Remove last 3 character ( _,-,mat,_ )
+                    eqn.pop()
+                return  # Stop execution here, don't add anything after deleting
+            else:    
+                eqn.append(matrix_name)
+                #  matrix button
+                # if current_text and not current_text.endswith('+ '):
+                if current_text:  
+                    current_text += " - "  # Ensure proper formatting
+                
+                self.equation_text.set(current_text + matrix_name)
+
+
+        button_matrixA = tk.Button(button_frame, text="Matrix A", command=lambda: update_equation("A"))
+        self.add_hover_effect(button_matrixA)
+        button_matrixA.grid(row=0, column=0, padx=5, pady=5)
+
+        button_matrixB = tk.Button(button_frame, text="Matrix B", command=lambda: update_equation("B"))
+        self.add_hover_effect(button_matrixB)
+        button_matrixB.grid(row=0, column=1, padx=5, pady=5)
+
+        button_matrixC = tk.Button(button_frame, text="Matrix C", command=lambda: update_equation("C"))
+        self.add_hover_effect(button_matrixC)
+        button_matrixC.grid(row=0, column=2, padx=5, pady=5)
+
+        # Equation label
+        equation_label = tk.Label(self.new_window, textvariable=self.equation_text, font=("Arial", 12))
+        equation_label.pack(pady=10)
+
+        delete_button = tk.Button(self.new_window, text="DEL", width=5, height=1, command= lambda: update_equation("D"))
+        self.add_hover_effect(delete_button)
+        delete_button.pack()
+
+        equalsto_button = tk.Button(self.new_window, text="=", width=5, height=1, command= lambda: self.subtract_matrix_backend(eqn))
+        equalsto_button.pack()
+        self.add_hover_effect(equalsto_button)
+    
+    def subtract_matrix_backend(self, eqn):
         """ Performs the matrix subtraction """
         try:
-            matrices = [self.matrixA, self.matrixB, self.matrixC]
-            matrices = [mat for mat in matrices if mat is not None]
+            # print(f'eqn = {eqn}')
+            if eqn == []:
+                ans = '0'
+                result_str = f"Subtraction Result: {ans}"
+                self.result_label.config(text="Result: " + ans)
+                # messagebox.showinfo("Addition Result", result_str)
+                self.silent_popup('Subtraction Result',result_str)
+            else:
+                mat_dict={'A': self.matrixA, 'B': self.matrixB, 'C' : self.matrixC}
 
-            if len(matrices) < 2:
-                messagebox.showerror("Error", "Please initialize at least two matrices to subtract.")
-                return
+                # checking if any matrix of eqn is of None type (i.e. value is not added in that matrix)
+                if any(mat_dict.get(mat) is None for mat in eqn):
+                    # messagebox.showerror("Error","One or more selected matrices are not initialized! ")
+                    self.silent_popup('Error',f'One or more selected matrices are not initialized!')
+                    self.new_window.destroy()
+                    return
 
-            # Ensure all matrices have the same shape
-            shape = matrices[0].shape
-            if not all(mat.shape == shape for mat in matrices):
-                messagebox.showerror("Error", "Matrices must have the same dimensions for subtraction!")
-                return
+                # Ensure all matrices have the same shape
+                shape = mat_dict.get(eqn[0]).shape
+                if not all(mat_dict.get(i).shape == shape for i in eqn):
+                    messagebox.showerror("Error", "Matrices must have the same dimensions for subtraction!")
+                    self.new_window.destroy()
+                    return
 
-            # Perform subtraction
-            self.ans = matrices[0] - np.sum(matrices[1:], axis=0)
-            result_str = f"Subtraction Result:\n{self.ans}"
-            self.result_label.config(text="Result: " + result_str)
-            messagebox.showinfo("Subtraction Result", result_str)
+                # Perform addition
+                matrices = [mat_dict.get(i) for i in eqn]
+                self.ans = matrices[0]- (np.sum(matrices[1:], axis=0))
+                result_str = f"Subtraction Result:\n{self.ans}"
+                self.result_label.config(text="Result: " + result_str)
+                # messagebox.showinfo("Subtraction Result", result_str)
+                self.silent_popup('Subtraction Result',result_str)
 
         except Exception as e:
-            messagebox.showerror("Error", f"An error occurred: {e}")
+            # messagebox.showerror("Error", f"An error occurred: {e}")
+            error_msg = f'An error occured: {e}'
+            self.silent_popup('Error',error_msg)
+        self.new_window.destroy()
 
     def silent_popup(self, title, message):
         popup = tk.Toplevel()
@@ -256,14 +356,14 @@ class Matrix:
         label.pack()
         ok_button = tk.Button(popup, text="OK", command=popup.destroy)
         ok_button.pack(pady=10)
-        popup.mainloop()
-
-# silent_popup("Matrix Data", "Matrix A:\n1 2\n3 4")  # Example
+        return
+        # popup.mainloop()
 
 
 if __name__ == "__main__":
     root = tk.Tk()
     root.title("Matrix Calculator")
     root.geometry("400x500")  # Set window size
+    root.resizable(0,0) # width, height (can also pass True, False)
     app = Matrix(root)
     root.mainloop()
