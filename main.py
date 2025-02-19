@@ -11,8 +11,11 @@ class Matrix:
         self.matrixC = None
         self.ans = None
         self.data = {1: self.matrixA, 2: self.matrixB, 3: self.matrixC}
-        
-        # GUI elements
+
+        # adding background color in root
+        self.root.configure(bg="lightgray")
+
+        # GUI elements    
         self.matrix_label = tk.Label(root, text="Matrix Operations", font=("Arial", 16))
         self.matrix_label.pack(pady=10)
 
@@ -40,11 +43,11 @@ class Matrix:
         self.button_add.pack(pady=5)
         self.add_hover_effect(self.button_add)
 
-        self.button_subtract = tk.Button(root, text="Subtract Matrices", command=self.subtract_matrix)
+        self.button_subtract = tk.Button(root, text="Subtract Matrices", command=self.subtract_matrix_backend)
         self.button_subtract.pack(pady=5)
         self.add_hover_effect(self.button_subtract)
 
-        self.result_label = tk.Label(root, text="Result: ", font=("Arial", 12))
+        self.result_label = tk.Label(root, text="Recent: ", font=("Arial", 12))
         self.result_label.pack(pady=10)
     
     def add_hover_effect(self, button):
@@ -119,34 +122,108 @@ class Matrix:
     def show_matrix_data(self):
         """ Displays the matrix data in a dialog box """
         data_str = f"Matrix A:\n{self.matrixA}\n\nMatrix B:\n{self.matrixB}\n\nMatrix C:\n{self.matrixC}"
-        messagebox.showinfo("Matrix Data", data_str)
+        # messagebox.showinfo("Matrix Data", data_str, icon = "none")
+        self.silent_popup('Matrix Data',data_str)
 
     def add_matrix(self):
+        self.new_window = tk.Toplevel(self.root)
+        self.new_window.title(f"Add Matrices")
+        self.new_window.geometry("400x400")
+
+        # Store equation text
+        self.equation_text = tk.StringVar()
+        self.equation_text.set("")  # Initially empty
+        
+        # eqn stores the eqn value 
+        eqn = []
+
+        # Buttons for Matrixs
+        button_frame = tk.Frame(self.new_window)
+        button_frame.pack()
+
+        # Function to update equation
+        def update_equation(matrix_name: str):
+            current_text: str = self.equation_text.get()
+            # print(f'current_text ={current_text}')
+
+            # for delete button
+            if matrix_name == "D":    
+                if current_text:
+                    if len(current_text) < 2:
+                        self.equation_text.set(current_text[:-1])  # Remove last character (mat)
+                    else:
+                        self.equation_text.set(current_text[:-4])  # Remove last 3 character ( _,+,mat,_ )
+                    eqn.pop()
+                return  # Stop execution here, don't add anything after deleting
+            else:    
+                eqn.append(matrix_name)
+                #  matrix button
+                # if current_text and not current_text.endswith('+ '):
+                if current_text:  
+                    current_text += " + "  # Ensure proper formatting
+                
+                self.equation_text.set(current_text + matrix_name)
+
+
+        button_matrixA = tk.Button(button_frame, text="Matrix A", command=lambda: update_equation("A"))
+        self.add_hover_effect(button_matrixA)
+        button_matrixA.grid(row=0, column=0, padx=5, pady=5)
+
+        button_matrixB = tk.Button(button_frame, text="Matrix B", command=lambda: update_equation("B"))
+        self.add_hover_effect(button_matrixB)
+        button_matrixB.grid(row=0, column=1, padx=5, pady=5)
+
+        button_matrixC = tk.Button(button_frame, text="Matrix C", command=lambda: update_equation("C"))
+        self.add_hover_effect(button_matrixC)
+        button_matrixC.grid(row=0, column=2, padx=5, pady=5)
+
+        # Equation label
+        equation_label = tk.Label(self.new_window, textvariable=self.equation_text, font=("Arial", 12))
+        equation_label.pack(pady=10)
+
+        delete_button = tk.Button(self.new_window, text="DEL", width=5, height=1, command= lambda: update_equation("D"))
+        self.add_hover_effect(delete_button)
+        delete_button.pack()
+
+        equalsto_button = tk.Button(self.new_window, text="=", width=5, height=1, command= lambda: self.add_matrix_backend(eqn))
+        equalsto_button.pack()
+        self.add_hover_effect(equalsto_button)
+
+    def add_matrix_backend(self, eqn):
         """ Performs the matrix addition """
         try:
-            matrices = [self.matrixA, self.matrixB, self.matrixC]
-            matrices = [mat for mat in matrices if mat is not None]
+            # print(f'eqn = {eqn}')
+            if eqn == []:
+                ans = '0'
+                result_str = f"Addition Reult: {ans}"
+                self.result_label.config(text="Result: " + ans)
+                messagebox.showinfo("Addition Result", result_str)
+            else:
+                mat_dict={'A': self.matrixA, 'B': self.matrixB, 'C' : self.matrixC}
 
-            if len(matrices) < 2:
-                messagebox.showerror("Error", "Please initialize at least two matrices to add.")
-                return
+                # checking if any matrix of eqn is of None type (i.e. value is not added in that matrix)
+                if any(mat_dict.get(mat) is None for mat in eqn):
+                    messagebox.showerror("Error","One or more selected matrices are not initialized! ")
+                    self.new_window.destroy()
+                    return
 
-            # Ensure all matrices have the same shape
-            shape = matrices[0].shape
-            if not all(mat.shape == shape for mat in matrices):
-                messagebox.showerror("Error", "Matrices must have the same dimensions for addition!")
-                return
+                # Ensure all matrices have the same shape
+                shape = mat_dict.get(eqn[0]).shape
+                if not all(mat_dict.get(i).shape == shape for i in eqn):
+                    messagebox.showerror("Error", "Matrices must have the same dimensions for addition!")
+                    return
 
-            # Perform addition
-            self.ans = np.sum(matrices, axis=0)
-            result_str = f"Addition Result:\n{self.ans}"
-            self.result_label.config(text="Result: " + result_str)
-            messagebox.showinfo("Addition Result", result_str)
-
+                # Perform addition
+                matrices = [mat_dict.get(i) for i in eqn]
+                self.ans = np.sum(matrices, axis=0)
+                result_str = f"Addition Result:\n{self.ans}"
+                self.result_label.config(text="Result: " + result_str)
+                messagebox.showinfo("Addition Result", result_str)
         except Exception as e:
             messagebox.showerror("Error", f"An error occurred: {e}")
+        self.new_window.destroy()
 
-    def subtract_matrix(self):
+    def subtract_matrix_backend(self):
         """ Performs the matrix subtraction """
         try:
             matrices = [self.matrixA, self.matrixB, self.matrixC]
@@ -171,10 +248,22 @@ class Matrix:
         except Exception as e:
             messagebox.showerror("Error", f"An error occurred: {e}")
 
+    def silent_popup(self, title, message):
+        popup = tk.Toplevel()
+        popup.title(title)
+        popup.geometry("400x300")
+        label = tk.Label(popup, text=message, font=("Arial", 12), padx=10, pady=10)
+        label.pack()
+        ok_button = tk.Button(popup, text="OK", command=popup.destroy)
+        ok_button.pack(pady=10)
+        popup.mainloop()
+
+# silent_popup("Matrix Data", "Matrix A:\n1 2\n3 4")  # Example
+
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.title("Matrix Operations")
+    root.title("Matrix Calculator")
     root.geometry("400x500")  # Set window size
     app = Matrix(root)
     root.mainloop()
