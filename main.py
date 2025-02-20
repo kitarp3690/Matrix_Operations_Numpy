@@ -55,6 +55,10 @@ class Matrix:
         self.button_subtract.grid(row=2, column=0, padx=5, pady=5)
         # self.button_subtract.pack(pady=5)
         self.add_hover_effect(self.button_subtract)
+        
+        self.button_multiply = tk.Button(self.functionalities_frame, text="Multiply Matrices", width=20, height=2 , command=self.multiply_matrix)
+        self.button_multiply.grid(row=2, column=0, padx=5, pady=5)
+        self.add_hover_effect(self.button_multiply)
 
         self.button_inverse = tk.Button(self.functionalities_frame, text="Inverse Matrix", width=20, height=2 , command=self.inverse_matrix)
         self.button_inverse.grid(row=3, column=0, padx=5, pady=5)
@@ -364,6 +368,121 @@ class Matrix:
             error_msg = f'An error occured: {e}'
             self.silent_popup('Error',error_msg)
         self.new_window.destroy()
+    
+    def multiply_matrix(self):
+        self.new_window = tk.Toplevel(self.root)
+        self.new_window.title(f"Multiply Matrices")
+        self.new_window.geometry("400x400")
+
+        # Store equation text
+        self.equation_text = tk.StringVar()
+        self.equation_text.set("")  # Initially empty
+        
+        # eqn stores the eqn value 
+        eqn = []
+
+        # to display how to use(htu) message
+        htu = tk.Label(self.new_window,text='Press Button ', font=(16))
+        htu.pack()
+
+        # Buttons for Matrixs
+        button_frame = tk.Frame(self.new_window)
+        button_frame.pack()
+
+        # Function to update equation
+        def update_equation(matrix_name: str):
+            current_text: str = self.equation_text.get()
+            # print(f'current_text ={current_text}')
+
+            # for delete button
+            if matrix_name == "D":    
+                if current_text:
+                    if len(current_text) < 2:
+                        self.equation_text.set(current_text[:-1])  # Remove last character (mat)
+                    else:
+                        self.equation_text.set(current_text[:-4])  # Remove last 3 character ( _,-,mat,_ )
+                    eqn.pop()
+                return  # Stop execution here, don't add anything after deleting
+            else:    
+                eqn.append(matrix_name)
+                #  matrix button
+                # if current_text and not current_text.endswith('+ '):
+                if current_text:  
+                    current_text += " x "  # Ensure proper formatting
+                
+                self.equation_text.set(current_text + matrix_name)
+
+
+        button_matrixA = tk.Button(button_frame, text="Matrix A", command=lambda: update_equation("A"))
+        self.add_hover_effect(button_matrixA)
+        button_matrixA.grid(row=0, column=0, padx=5, pady=5)
+
+        button_matrixB = tk.Button(button_frame, text="Matrix B", command=lambda: update_equation("B"))
+        self.add_hover_effect(button_matrixB)
+        button_matrixB.grid(row=0, column=1, padx=5, pady=5)
+
+        button_matrixC = tk.Button(button_frame, text="Matrix C", command=lambda: update_equation("C"))
+        self.add_hover_effect(button_matrixC)
+        button_matrixC.grid(row=0, column=2, padx=5, pady=5)
+
+        # Equation label
+        equation_label = tk.Label(self.new_window, textvariable=self.equation_text, font=("Arial", 12))
+        equation_label.pack(pady=10)
+
+        delete_button = tk.Button(self.new_window, text="DEL", width=5, height=1, command= lambda: update_equation("D"))
+        self.add_hover_effect(delete_button)
+        delete_button.pack()
+
+        equalsto_button = tk.Button(self.new_window, text="=", width=5, height=1, command= lambda: self.multiply_matrix_backend(eqn))
+        equalsto_button.pack()
+        self.add_hover_effect(equalsto_button)
+    
+    def multiply_matrix_backend(self, eqn):
+        """ Performs the matrix multiplication """
+        try:
+            # print(f'eqn = {eqn}')
+            if eqn == []:
+                ans = '0'
+                result_str = f"Multiplication Result: {ans}"
+                self.result_label.config(text="Result: " + ans)
+                # messagebox.showinfo("Addition Result", result_str)
+                self.silent_popup('Multiplication Result',result_str)
+            else:
+                mat_dict={'A': self.matrixA, 'B': self.matrixB, 'C' : self.matrixC}
+
+                # checking if any matrix of eqn is of None type (i.e. value is not added in that matrix)
+                if any(mat_dict.get(mat) is None for mat in eqn):
+                    # messagebox.showerror("Error","One or more selected matrices are not initialized! ")
+                    self.silent_popup('Error',f'One or more selected matrices are not initialized!')
+                    self.new_window.destroy()
+                    return
+
+                # Ensure matrices can be multiplied
+                shape_A = mat_dict.get(eqn[0]).shape  # Shape of first matrix
+                for i in range(1, len(eqn)):
+                    shape_B = mat_dict.get(eqn[i]).shape  # Shape of next matrix in the equation
+                    if shape_A[1] != shape_B[0]:  # Check if columns of A match rows of B
+                        messagebox.showerror("Error", "Matrix multiplication is not possible! Ensure A.columns == B.rows.")
+                        self.new_window.destroy()
+                        return
+                    shape_A = (shape_A[0], shape_B[1])  # Update shape for next multiplication
+
+                # Perform multiplication
+                matrices = [mat_dict.get(i) for i in eqn]
+                result = matrices[0]
+                for i in range(1, len(matrices)):
+                    result  = np.dot(result, matrices[i])
+                self.ans = result
+                result_str = f"Multiplication Result:\n{self.ans}"
+                self.result_label.config(text="Recent: " + result_str)
+                # messagebox.showinfo("Subtraction Result", result_str)
+                self.silent_popup('Multiplication Result',result_str)
+
+        except Exception as e:
+            # messagebox.showerror("Error", f"An error occurred: {e}")
+            error_msg = f'An error occured: {e}'
+            self.silent_popup('Error',error_msg)
+        self.new_window.destroy()
 
     def inverse_matrix(self):
         new_window  = tk.Toplevel(self.root)
@@ -516,7 +635,6 @@ class Matrix:
         ok_button.pack(pady=10)
         return
         # popup.mainloop()
-
 
 if __name__ == "__main__":
     root = tk.Tk()
