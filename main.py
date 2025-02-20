@@ -57,23 +57,23 @@ class Matrix:
         self.add_hover_effect(self.button_subtract)
         
         self.button_multiply = tk.Button(self.functionalities_frame, text="Multiply Matrices", width=20, height=2 , command=self.multiply_matrix)
-        self.button_multiply.grid(row=2, column=0, padx=5, pady=5)
+        self.button_multiply.grid(row=3, column=0, padx=5, pady=5)
         self.add_hover_effect(self.button_multiply)
 
         self.button_inverse = tk.Button(self.functionalities_frame, text="Inverse Matrix", width=20, height=2 , command=self.inverse_matrix)
-        self.button_inverse.grid(row=3, column=0, padx=5, pady=5)
+        self.button_inverse.grid(row=4, column=0, padx=5, pady=5)
         self.add_hover_effect(self.button_inverse)
 
         self.button_transpose = tk.Button(self.functionalities_frame, text="Transpose Matrix", width=20, height=2 , command=self.transpose_matrix)
-        self.button_transpose.grid(row=4, column=0, padx=5, pady=5)
+        self.button_transpose.grid(row=5, column=0, padx=5, pady=5)
         self.add_hover_effect(self.button_transpose)
 
         self.button_determinant = tk.Button(self.functionalities_frame, text="Determinant of Matrix", width=20, height=2 , command=self.determinant_matrix)
-        self.button_determinant.grid(row=4, column=0, padx=5, pady=5)
+        self.button_determinant.grid(row=6, column=0, padx=5, pady=5)
         self.add_hover_effect(self.button_determinant)
 
         self.button_eigen = tk.Button(self.functionalities_frame, text="Eigen of Matrix", width=20, height=2 , command=self.eigen_matrix)
-        self.button_eigen.grid(row=4, column=0, padx=5, pady=5)
+        self.button_eigen.grid(row=7, column=0, padx=5, pady=5)
         self.add_hover_effect(self.button_eigen)
 
         self.result_label = tk.Label(root, text="Recent: ", font=("Arial", 12))
@@ -91,7 +91,7 @@ class Matrix:
 
     def take_input(self, matrix_name):
         """Function to create a grid of Entry widgets for matrix input"""
-        size_str = simpledialog.askstring("Matrix Size", f"Enter {matrix_name}' size in n,m format:")
+        size_str = simpledialog.askstring("Matrix Size", f"Enter {matrix_name}'s size in n,m format:")
         try:
             if size_str:
                 size = tuple(map(int, size_str.split(',')))
@@ -114,23 +114,29 @@ class Matrix:
                         entry = tk.Entry(self.grid_window, width=5)
                         entry.grid(row=i, column=j, padx=5, pady=5)
                         row_entries.append(entry)
+                        # Set focus to the first Entry widget at [0,0]
+                        if i == 0 and j == 0:
+                            entry.focus_set() # setting the focus to [0,0]
                     self.entries.append(row_entries)
 
                 # Add a button to save the input and close the grid window
                 save_button = tk.Button(self.grid_window, text="Save Matrix", command=lambda: self.save_matrix(matrix_name))
                 save_button.grid(row=size[0], column=0, columnspan=size[1], pady=10)
 
+                # Bind the Enter key to the save_matrix function
+                save_button.bind('<Return>', lambda event: self.save_matrix(matrix_name, event))
+
         except Exception as e:
             messagebox.showerror("Error", f"An error occurred: {e}")
 
-    def save_matrix(self, matrix_name):
+    def save_matrix(self, matrix_name, event=None):
         """Function to save the values from the Entry widgets into the matrix"""
         try:
             matrix = np.zeros(self.size, dtype=int)
             for i in range(self.size[0]):
                 for j in range(self.size[1]):
                     value = self.entries[i][j].get()
-                    if re.match(r"^-?\d+$",value): # This is a regular expression checking whether the value is positive or negative integer or not
+                    if re.match(r"^-?\d+$", value):  # Check if the value is an integer
                         matrix[i, j] = int(value)
                     else:
                         messagebox.showerror("Invalid Input", f"Please enter a valid integer for position [{i},{j}]")
@@ -150,10 +156,21 @@ class Matrix:
             messagebox.showerror("Error", f"An error occurred: {e}")
 
     def show_matrix_data(self):
-        """ Displays the matrix data in a dialog box """
-        data_str = f"Matrix A:\n{self.matrixA}\n\nMatrix B:\n{self.matrixB}\n\nMatrix C:\n{self.matrixC}"
-        # messagebox.showinfo("Matrix Data", data_str, icon = "none")
-        self.silent_popup('Matrix Data',data_str)
+        """ Displays the matrix data in a properly formatted dialog box """
+
+        def format_matrix(matrix):
+            """Formats a matrix for display with proper alignment"""
+            if matrix is None:
+                return "Not Initialized"
+            return "\n".join("  ".join(f"{x:>10,}" for x in row) for row in matrix)
+
+        formatted_A = format_matrix(self.matrixA)
+        formatted_B = format_matrix(self.matrixB)
+        formatted_C = format_matrix(self.matrixC)
+
+        data_str = f"Matrix A:\n{formatted_A}\n\nMatrix B:\n{formatted_B}\n\nMatrix C:\n{formatted_C}"
+
+        self.silent_popup("Matrix Data", data_str)
 
     def add_matrix(self):
         self.new_window = tk.Toplevel(self.root)
@@ -628,7 +645,7 @@ class Matrix:
     def silent_popup(self, title, message):
         popup = tk.Toplevel()
         popup.title(title)
-        popup.geometry("400x300")
+        popup.geometry("400x400")
         label = tk.Label(popup, text=message, font=("Arial", 12), padx=10, pady=10)
         label.pack()
         ok_button = tk.Button(popup, text="OK", command=popup.destroy)
@@ -639,7 +656,7 @@ class Matrix:
 if __name__ == "__main__":
     root = tk.Tk()
     root.title("Matrix Calculator")
-    root.geometry("400x500")  # Set window size
+    root.geometry("400x700")  # Set window size
     root.resizable(0,0) # width, height (can also pass True, False)
     app = Matrix(root)
     root.mainloop()
