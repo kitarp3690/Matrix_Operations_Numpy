@@ -63,18 +63,20 @@ python main.py
 - The GUI is built using tkinter and includes buttons, labels, and frames for a clean and organized layout.
 - Hover effects are added to buttons for better user interaction.
 
-## Acknowledgements
+# Screenshot
+![screenshot1](images/matrix_calculator1.png)
+![screenshot2](images/matrix_calculator2.png)
+![screenshot3](images/matrix_calculator3.png)
 
+## Acknowledgements
 - numpy: For efficient matrix operations.
 - tkinter: For building the graphical user interface.
 - Inspired by educational tools for linear algebra and matrix calculations.
 - Thanks to contributors and the Python community for the great libraries and tools!
 
 ## Contact Information
-
 For any questions, feel free to contact me via GitHub or at my email: pratikshrestha362@gmail.com.
 
 ## Author
-
 - [Pratik Shrestha](https://www.github.com/kitarp3690)
 
